@@ -1,0 +1,255 @@
+APUNTES MONGO DB
+********************************************************
+------Show databases------
+********************************************************
+show dbs
+
+********************************************************
+------Create a database------
+
+the scheme that we want to create is:
+database > collection > register with the following names:
+catalunya > agenda > docs
+********************************************************
+
+use catalunya
+db.createCollection('agenda')
+show collections
+
+********************************************************
+------Structure of the document------
+********************************************************
+
+db.agenda.insert(
+    {
+        nombre:'harry',
+        apellido: 'vargas',
+        edad: 27,
+        profesion: ['quimico','cientifico de datos'],
+        ciudad: 'bogota'
+    }
+)
+
+db.agenda.insertMany(
+    [
+        {
+            nombre: 'ana',
+            apellido: 'murcia',
+            edad: 35,
+            profesion: ['intenieria de sistemas','developer'],
+            ciudad: 'bogota'
+        },
+        {
+           nombre: 'lina',
+           apellido: 'ruiz',
+           edad: '21',
+           profesion: 'ingeniero industrial',
+           ciudad: 'mosquera' 
+        },
+        {
+            nombre: 'rafael',
+            apellido: 'gomez',
+            edad: 35,
+            profesion: 'ingeniero de sistemas',
+            ciudad: 'bogota'
+        },
+        {
+            nombre: 'nicolas',
+            apellido: 'castillo',
+            edad: 27,
+            profesion: ['fisico','data scientist'],
+            ciudad: 'tunja'
+        },
+        {
+            nombre: 'edgar',
+            apellido: 'chuquiruna',
+            edad: 30,
+            profesion: 'economista',
+            ciudad: 'lima'
+        }
+    ]
+)
+
+db.agenda.insertMany(
+    [
+        {
+            nombre: 'alexander',
+            apellido: 'ibarguen',
+            edad: 42,
+            profesion: 'ingeniero',
+            ciudad: 'el carmen de atrato'
+        },
+        {
+           nombre: 'hernan',
+           apellido: 'aya',
+           edad: '38',
+           profesion: 'ingeniero',
+           ciudad: 'villavicencio' 
+        },
+        {
+            nombre: 'camilo',
+            apellido: 'gomez',
+            edad: 34,
+            profesion: 'ingeniero',
+            ciudad: 'medellin'
+        },
+        {
+            nombre: 'juan pablo',
+            apellido: 'obregon',
+            edad: 38,
+            profesion: 'ingeniero',
+            ciudad: 'pereira'
+        }
+    ]
+)
+
+********************************************************
+------Document Visualization------
+********************************************************
+
+db.agenda.find().pretty()
+
+********************************************************
+------Document Deletion------
+********************************************************
+
+db.agenda.insert(
+    {
+        _id: 1234,
+        nombre:'Asorfeien',
+        apellido: 'Kurmetekeya',
+        edad: 520,
+        profesion: 'Fisico de redes',
+        contacto: 'AsorfeienKurmetekeya@gmail.com',
+        ciudad: 'bogota'
+    }
+)
+
+db.agenda.deleteOne(
+    {
+        nombre: 'Asorfeien'
+    }
+)
+
+********************************************************
+------Document Count------
+********************************************************
+
+db.agenda.find().count()
+
+********************************************************
+------Document Query coincidences------
+********************************************************
+
+db.agenda.find(
+    {
+        ciudad: 'medellin'
+    }
+).pretty()
+
+db.agenda.find(
+    {
+        edad: 27
+    }
+).pretty()
+
+********************************************************
+------Operators for complex queries------
+
+Every operator in MongoDB uses $ as suffix, some of the most common
+operators are:
+
+Logic -> and, or, not
+Comparation -> gt, gte, lt, lte
+Range -> in
+********************************************************
+
+db.agenda.find(
+    {edad: {$gt: 27}}
+).count()
+
+db.agenda.find(
+    {
+        $and: [
+            {edad: {$gt: 27} },
+            {ciudad: 'bogota'}
+        ]
+    }
+).pretty()
+
+db.agenda.find(
+    {
+        $and: [
+            { edad: { $gt: 27 } },
+            { ciudad: { $in:['bogota','medellin']  } }
+        ]
+    }
+).pretty()
+
+********************************************************
+------Structured query------
+
+In general, the query command .find() posesses the following structure:
+
+db.collection.find({<query>},{<structure of the returned query>})
+********************************************************
+
+db.agenda.find(
+    {edad: {$lte: 40} },
+    {nombre: 1, '_id':0}
+)
+
+db.agenda.find(
+    {edad: {$lte:40}},
+    {nombre: 1, '_id':0, edad: 1}
+).pretty()
+
+********************************************************
+------Exists operator------
+********************************************************
+
+db.agenda.find(
+    {
+        contacto: {$exists: true}
+    }
+).pretty()
+
+********************************************************
+------Update Many------
+
+The command .updateMany() has the following structure:
+
+db.collection.updateMany(
+    {<query>},
+    {$set:{field_1:new_Value},
+    {field_2:new_Value},
+    ...
+    {field_n:new_Value}
+    }
+)
+
+********************************************************
+
+db.agenda.updateMany(
+    {ciudad: 'bogota'},
+    {$set: {edad: 'NA'}}
+)
+
+********************************************************
+------Delete many------
+********************************************************
+
+db.agenda.deleteMany(
+    {
+        edad: 'NA'
+    }
+)
+
+db.agenda.deleteMany({})
+db.agenda.drop()
+
+********************************************************
+------Show all database commands------
+********************************************************
+
+db.

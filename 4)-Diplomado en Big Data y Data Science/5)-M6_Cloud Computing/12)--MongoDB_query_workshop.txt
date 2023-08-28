@@ -1,0 +1,277 @@
+***********************************************
+0. Set up de la base de datos.
+***********************************************
+
+use catalunya
+
+***********************************************
+1. Todos los restaurantes de la base de datos.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {},
+    {name: 1, '_id':0}
+).pretty()
+
+***********************************************
+2. Todos los restaurantes: únicamente los
+campos restaurant_id , name , cuisine.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {},
+    {restaurant_id:1, name:1, cuisine:1}
+)
+
+***********************************************
+3. Todos los restaurantes: únicamente los
+campos restaurant_id , name , zipcode y SIN _id .
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {},
+    {
+        restaurant_id:1,
+        name:1,
+        'address.zipcode':1,
+        _id:0
+    }
+).pretty()
+
+***********************************************
+4. Restaurante en el borough “Manhattan”.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {
+        borough: 'Manhattan'
+    },
+    {
+        restaurant_id:1,
+        name:1,
+        borough: 'Manhattan'
+    }
+).pretty()
+
+***********************************************
+5. Restaurantes con score mayor que 90.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {'grades.score': {$gt: 90 }},
+    {
+        restaurant_id:1,
+        name:1,
+        '_id':0,
+        'grades':{
+            $map:{
+                input: {
+                    $filter:{
+                        input: "$grades",
+                        as:"grade",
+                        cond: {
+                            $and:[
+                            {$gt: ["$$grade.score", 90]},
+                            {$ne: ["$$grade.date", null]}
+                            ]
+                        }
+                    }
+                },
+                
+                as: "filteredGrade",
+                in:{
+                    grade: "$$filteredGrade.grade",
+                    score: "$$filteredGrade.score"
+                }
+                
+            }
+        }
+    }
+).pretty()
+
+***********************************************
+6. Restaurante con score mayor que 80 y menor que 90.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {
+        'grades.score': { $gt: 80, $lt: 90 }
+    },
+    {
+        restaurant_id: 1,
+        name: 1,
+        '_id': 0,
+        grades: {
+            $map: {
+                input: {
+                    $filter: {
+                        input: "$grades",
+                        as: "grade",
+                        cond: {
+                            $and: [
+                                { $gt: ["$$grade.score", 80] },
+                                { $lt: ["$$grade.score", 90] },
+                                { $ne: ["$$grade.date", null] }
+                            ]
+                        }
+                    }
+                },
+                as: "filteredGrade",
+                in: {
+                    grade: "$$filteredGrade.grade",
+                    score: "$$filteredGrade.score"
+                }
+            }
+        }
+    }
+).pretty()
+
+***********************************************
+7. Restaurantes ubicados en latitude menor a -95.754168.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {
+        'address.coord.0': { $lt: -95.754168 }
+    },
+    {
+        restaurant_id: 1,
+        name: 1,
+        '_id': 0,
+        'address.coord':1
+    }
+).pretty()
+
+***********************************************
+8. Restaurantes para los cuales cuisine es diferente de “American”, tiene
+un grade de “A” y no pertenece al borough “Brooklyn”.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.aggregate(
+    [
+    {
+        $match: {
+            cuisine: {$ne: 'American'},
+            'grades.grade': 'A',
+            borough: {$ne: 'Brooklyn'}
+        }
+    },
+    {
+        $project:{
+            restaurant_id:1,
+            name:1,
+            borough:1,
+            '_id':0,
+            grades:{
+                $cond:{
+                    if:{
+                        $gt:[
+                        {
+                            $size: {
+                                $filter:{
+                                    input: '$grades',
+                                    cond:{$eq: ['$$this.grade','A']}
+                                }
+                            }
+                        },
+                        0
+                        ]
+                    },
+                    then:{
+                        $filter: {
+                            input:'$grades',
+                            cond: {$eq: ['$$this.grade','A']}
+                        }
+                    },
+                    else: []
+                }
+            }
+        }
+    }
+]
+).pretty()
+
+***********************************************
+9. Restaurantes en los cuales el nombre comienza por la palabra “Wil”. (Hint:
+usar expresión regular sobre el campo name ).
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {name:/^Wil/},
+    {restaurant_id:1,name:1,_id:0}
+).pretty()
+
+***********************************************
+10. Restaurantes en los cuales la cuisine NO es “American” NI “Chinese” O
+el name comienza por la palabra “Wil”. (Hint: utilizar los
+operadores $or y $and ).
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {
+        $or:[
+        {cuisine: {$nin:["American", "Chinese"]}},
+        {name: /^Wil/}
+        ]
+    },
+    {
+        name:1,
+        cuisine:1,
+        restaurant_id:1,
+        '_id':0
+    }
+).pretty()
+
+***********************************************
+11. Restaurantes ordenados en ascendentemente por el name.
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+  {},
+  {
+    name: 1,
+    cuisine: 1,
+    restaurant_id: 1,
+    _id: 0
+  }
+).sort({ name: 1 }).pretty()
+
+***********************************************
+12. Restaurantes para los cuales el address.street existe. (Hint: utilizar
+operador $exists ).
+***********************************************
+
+----------------QUERY:----------------
+
+db.restaurantes.find(
+    {
+        'address.street': {$exists: true}
+    },
+    {
+        name:1,
+        _id:0,
+        'address.street': 1
+    }
+).pretty()
